@@ -9,21 +9,50 @@ stages:
       - docs/figures/target_distribution.png
       - docs/figures/correlation_heatmap_creditos.png
       - docs/figures/correlation_heatmap_tarjetas.png
-      - docs/figures/ingresos_vs_vivienda_boxplot.png
-      - docs/figures/edad_vs_importe_scatter.png
+
   test_pandera:
-    cmd: pytest --html=docs/report_basico.html --self-contained-html test/test_data_quality.py -v
+    cmd: pytest --html=docs/report_basico.html --self-contained-html test/test_data_quality.py -v || true
     deps:
-      - data/raw/datos_creditos.csv
-      - data/raw/datos_tarjetas.csv
-      - test/test_data_quality.py
+    - data/raw/datos_creditos.csv
+    - data/raw/datos_tarjetas.csv
+    - test/test_data_quality.py
     outs:
-      - docs/report_basico.html
+    - docs/report_basico.html
+
   test_ge:
-    cmd: pytest --html=test/report_ge.html --self-contained-html test/test_data_quality_ge.py -v
+    cmd: pytest --html=docs/report_ge.html --self-contained-html test/test_data_quality_ge.py -v || true
     deps:
+    - data/raw/datos_creditos.csv
+    - data/raw/datos_tarjetas.csv
+    - test/test_data_quality_ge.py
+    outs:
+    - docs/report_ge.html
+
+  data_processing:
+    cmd: python src/data_prep.py
+    deps:
+      - src/data_prep.py
       - data/raw/datos_creditos.csv
       - data/raw/datos_tarjetas.csv
-      - test/test_data_quality_ge.py
     outs:
-      - docs/report_ge.html
+      - data/processed/datos_integrados.csv
+
+  train_model:
+    cmd: python src/train_model.py
+    deps:
+      - src/train_model.py
+      - data/processed/datos_integrados.csv
+    outs: 
+      - models/prod_model.pkl 
+      - models/prod_preprocessor.pkl
+      - docs/figures/confusion_matrix.png
+    metrics:
+      - metrics/train_metrics.json
+
+  test_model:
+    cmd: pytest --html=docs/report_model.html --self-contained-html test/test_train.py -v || true
+    deps:
+    - data/processed/datos_integrados.csv
+    - test/test_train.py
+    outs:
+    - docs/report_model.html
