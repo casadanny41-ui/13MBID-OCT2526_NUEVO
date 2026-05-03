@@ -90,6 +90,27 @@ def process_data(datos_creditos: str = "data/raw/datos_creditos.csv",
     # o HTML con ydata-profiling.
     ##################################################################################
 
+##################################################################################
+    # OPCIÓN EXTRA: Generación automática de reporte de calidad y metadatos
+    ##################################################################################
+    from ydata_profiling import ProfileReport
+
+    print("Generando reporte de perfilado de datos...")
+    
+    # Creamos el reporte de los datos integrados y procesados
+    profile = ProfileReport(
+        df_integrado, 
+        title="Reporte de Metadatos - Datos Integrados",
+        explorative=True
+    )
+    
+    # Exportamos el reporte a formato HTML en la carpeta de documentación
+    report_path = "docs/reporte_calidad_datos.html"
+    profile.to_file(report_path)
+    
+    print(f"Reporte generado exitosamente en: {report_path}")
+
+    
 
 if __name__ == "__main__":
     process_data()  
