@@ -10,55 +10,57 @@ app = FastAPI(
     version="1.0.0"
 )
 
+#+++++++++++++++++++++++++
 class PredictionRequest(BaseModel):
-    #################################################################################
-    # TODO: adaptar el modelo según los resultados de la fase de preparación de datos
-    ##################################################################################
-    edad: int = Field(..., description="Edad del cliente")
-    antiguedad_empleado: float = Field(..., description="Antigüedad del empleado")
-    situacion_vivienda: str = Field(..., description="Situación de la vivienda")
-    ingresos: int = Field(..., description="Ingresos del cliente")
-    objetivo_credito: str = Field(..., description="Objetivo del crédito")
-    pct_ingreso: float = Field(..., description="Porcentaje de ingreso")
-    tasa_interes: float = Field(..., description="Tasa de interés")
-    estado_credito: int = Field(..., description="Estado del crédito")
-    antiguedad_cliente: float = Field(..., description="Antigüedad del cliente")
-    estado_civil: str = Field(..., description="Estado civil")
-    estado_cliente: str = Field(..., description="Estado del cliente")
-    gastos_ult_12m: float = Field(..., description="Gastos de los últimos 12 meses")
-    genero: str = Field(..., description="Género")
-    limite_credito_tc: float = Field(..., description="Límite de crédito de la tarjeta de crédito")
-    nivel_educativo: str = Field(..., description="Nivel educativo")
-    personas_a_cargo: float = Field(..., description="Personas a cargo")
-    capacidad_pago: float = Field(..., description="Capacidad de pago")
-    operaciones_mensuales: float = Field(..., description="Operaciones mensuales")
-    presion_financiera: float = Field(..., description="Presión financiera")
+    # ---------------------------------------------------------------------------------
+    # TODO: Modelo adaptado a la fase de preparación de datos (Proyecto 13MBID)
+    # ---------------------------------------------------------------------------------
+    edad: int = Field(..., ge=18, le=100, description="Edad del cliente en años")
+    antiguedad_empleado: float = Field(..., ge=0, description="Años de experiencia laboral")
+    situacion_vivienda: str = Field(..., pattern="^(ALQUILER|PROPIA|HIPOTECADA|OTRA)$", description="Estado de propiedad de la vivienda")
+    ingresos: int = Field(..., gt=0, description="Ingresos anuales totales")
+    objetivo_credito: str = Field(..., description="Motivo del préstamo (e.g., EDUCACION, PERSONAL, VIVIENDA)")
+    pct_income: float = Field(..., alias="pct_ingreso", ge=0, le=1.0, description="Proporción del ingreso destinada al crédito")
+    tasa_interes: float = Field(..., ge=0, description="Tasa de interés aplicada")
+    estado_credito: int = Field(..., description="Estado actual (0 para pagado, 1 para mora)")
+    antiguedad_cliente: float = Field(..., description="Meses de relación con la entidad")
+    estado_civil: str = Field(..., description="Estado civil del solicitante")
+    estado_cliente: str = Field(..., description="Estado operativo del cliente (ACTIVO/INACTIVO)")
+    gastos_ult_12m: float = Field(..., description="Monto total de gastos en el último año")
+    genero: str = Field(..., pattern="^(M|F)$", description="Género del cliente")
+    limite_credito_tc: float = Field(..., description="Límite asignado en tarjeta de crédito")
+    nivel_educativo: str = Field(..., description="Último nivel de estudios alcanzado")
+    personas_a_cargo: float = Field(..., ge=0, description="Número de dependientes económicos")
+    capacidad_pago: float = Field(..., description="Indicador de solvencia calculado")
+    operaciones_mensuales: float = Field(..., description="Promedio de transacciones al mes")
+    presion_financiera: float = Field(..., description="Relación deuda/ingreso calculada")
 
     class Config:
+        populate_by_name = True # Permite usar el alias 'pct_ingreso'
         json_schema_extra = {
             "example": {
-                "edad": 21,
+                "edad": 30,
                 "antiguedad_empleado": 5.0,
-                "situacion_vivienda": "PROPIA",
-                "ingresos": 9600,
-                "objetivo_credito": "EDUCACIÓN",
-                "pct_ingreso": 0.1,
-                "tasa_interes": 11.14,
+                "situacion_vivienda": "ALQUILER",
+                "ingresos": 50000,
+                "objetivo_credito": "PERSONAL",
+                "pct_ingreso": 0.12,
+                "tasa_interes": 14.5,
                 "estado_credito": 0,
-                "antiguedad_cliente": 39.0,
-                "estado_civil": "CASADO",
+                "antiguedad_cliente": 24.0,
+                "estado_civil": "SOLTERO",
                 "estado_cliente": "ACTIVO",
-                "gastos_ult_12m": 1144.0,
+                "gastos_ult_12m": 12000.0,
                 "genero": "M",
-                "limite_credito_tc": 12691.0,
-                "nivel_educativo": "SECUNDARIO_COMPLETO",
-                "personas_a_cargo": 3.0,
-                "capacidad_pago": 0.104167,
-                "operaciones_mensuales": 3.5,
-                "presion_financiera": 0.17125
+                "limite_credito_tc": 5000.0,
+                "nivel_educativo": "UNIVERSITARIO_COMPLETO",
+                "personas_a_cargo": 0.0,
+                "capacidad_pago": 0.45,
+                "operaciones_mensuales": 15.0,
+                "presion_financiera": 0.24
             }
         }
-
+#+++++++++++++++++++++++++
 class PredictionResponse(BaseModel):
     prediction: str
     probability: Dict[str, float]
