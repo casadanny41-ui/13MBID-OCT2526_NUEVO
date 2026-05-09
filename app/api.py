@@ -68,14 +68,17 @@ class PredictionResponse(BaseModel):
     model_info: Dict[str, str]
 
 # Cargar el modelo entrenado
-# ESTO VA DENTRO DEL ARCHIVO api.py, NO EN LA TERMINAL
 MODEL_PATH = "models/prod_model.pkl"
 
 try:
     model = joblib.load(MODEL_PATH)
     print("Modelo cargado exitosamente.")
+except FileNotFoundError:
+    print(f"Error: No se encontró el modelo en la ruta {MODEL_PATH}. Asegúrate de que el modelo esté entrenado y guardado correctamente.")
+    model = None
 except Exception as e:
     print(f"Error al cargar el modelo: {e}")
+    model = None
 
 @app.get("/")
 def read_root():
