@@ -109,19 +109,27 @@ with st.form("prediction_form"):
 #########################################################################################
 
 
-# 1. Cálculo de Presión Financiera: (Gastos últimos 12m / Ingresos) * 100
-# Aunque el usuario lo ingrese, lo recalculamos para asegurar precisión técnica.
-presion_financiera_calculada = (gastos_ult_12m / ingresos) if ingresos > 0 else 0
-
-# 2. Cálculo de Capacidad de Pago: (Ingresos - Gastos) / Personas a cargo
-# Nota: Sumamos 1 a personas_a_cargo para evitar división por cero si no tiene dependientes.
-capacidad_pago_calculada = (ingresos - gastos_ult_12m) / (personas_a_cargo + 1)
-
-# 3. Mapeo de variables categóricas (Asegurar que coincidan con el entrenamiento)
-# Si tu modelo espera 'Y'/'N' para la mora, aquí podrías mapear etiquetas.
+#######################################################################################
+# Lógica de procesamiento y envío a la API
+#######################################################################################
 
 if submit_button:
-    # Construcción del diccionario con los nombres de variables exactos que espera tu API
+    # 1. Cálculos de ingeniería de características (Features) requeridos por el modelo
+    # Estas son las columnas que el error 503 indicaba como faltantes
+    
+    # Relación de gastos sobre ingresos
+    presion_financiera_calc = (gastos_ult_12m / ingresos) if ingresos > 0 else 0
+    
+    # Capacidad de pago ajustada
+    capacidad_pago_calc = (ingresos - gastos_ult_12m) / (personas_a_cargo + 1)
+    
+    # Gasto promedio por operación
+    gasto_promedio_op = (gastos_ult_12m / operaciones_mensuales) if operaciones_mensuales > 0 else 0
+    
+    # Estabilidad laboral (Años de empleo / Edad)
+    estabilidad_laboral = (antiguedad_empleado / edad) if edad > 0 else 0
+
+    # 2. Construcción del diccionario con los nombres EXACTOS que espera la API
     input_data = {
         "edad": edad,
         "antiguedad_empleado": antiguedad_empleado,
@@ -139,36 +147,17 @@ if submit_button:
         "limite_credito_tc": limite_credito_tc,
         "nivel_educativo": nivel_educativo,
         "personas_a_cargo": personas_a_cargo,
-        "capacidad_pago": capacidad_pago_calculada,      # Usamos el valor calculado
+        "capacidad_pago": capacidad_pago_calc,
         "operaciones_mensuales": operaciones_mensuales,
-        "presion_financiera": presion_financiera_calculada # Usamos el valor calculado
-    }
-
-#++++++++++++++++++++++++++++++++
-if submit_button:
-    input_data = {
-        "edad": edad,
-        "antiguedad_empleado": antiguedad_empleado,
-        "situacion_vivienda": situacion_vivienda,
-        "ingresos": ingresos,
-        "objetivo_credito": objetivo_credito,
-        "pct_ingreso": pct_ingreso,
-        "tasa_interes": tasa_interes,
-        "estado_credito": estado_credito,
-        "antiguedad_cliente": antiguedad_cliente,
-        "estado_civil": estado_civil,
-        "estado_cliente": estado_cliente,
-        "gastos_ult_12m": gastos_ult_12m,
-        "genero": genero,
-        "limite_credito_tc": limite_credito_tc,
-        "nivel_educativo": nivel_educativo,
-        "personas_a_cargo": personas_a_cargo,
-        "capacidad_pago": capacidad_pago,
-        "operaciones_mensuales": operaciones_mensuales,
-        "presion_financiera": presion_financiera
+        "presion_financiera": presion_financiera_calc,
+        # Columnas adicionales detectadas en el error 503:
+        "ops_mensuales_tarjeta": operaciones_mensuales, 
+        "gasto_promedio_op": gasto_promedio_op,
+        "estabilidad_laboral": estabilidad_laboral
     }
 
     try:
+        # Petición a la API de Render
         resp = requests.post(f"{api_url}/predict", json=input_data, timeout=10)
         resp.raise_for_status()
         result = resp.json()
