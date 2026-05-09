@@ -158,7 +158,7 @@ if submit_button:
 
     try:
         # Petición a la API de Render
-        resp = requests.post(f"{api_url}/predict", json=input_data, timeout=10)
+        resp = requests.post(f"{api_url}/predict", json=input_data, timeout=60)
         resp.raise_for_status()
         result = resp.json()
 
