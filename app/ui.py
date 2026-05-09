@@ -136,7 +136,7 @@ if submit_button:
         "situacion_vivienda": situacion_vivienda,
         "ingresos": ingresos,
         "objetivo_credito": objetivo_credito,
-        "pct_ingreso": pct_ingreso,
+        "pct_ingreso": pct_ingreso, # <--- El error dice que falta esta
         "tasa_interes": tasa_interes,
         "estado_credito": estado_credito,
         "antiguedad_cliente": antiguedad_cliente,
@@ -147,10 +147,10 @@ if submit_button:
         "limite_credito_tc": limite_credito_tc,
         "nivel_educativo": nivel_educativo,
         "personas_a_cargo": personas_a_cargo,
-        "capacidad_pago": capacidad_pago_calc,
+        "capacidad_pago": capacidad_pago,
         "operaciones_mensuales": operaciones_mensuales,
-        "presion_financiera": presion_financiera_calc,
-        # Columnas adicionales detectadas en el error 503:
+        "presion_financiera": presion_financiera,
+        # Estas 3 son las que el error 503 marca como "missing":
         "ops_mensuales_tarjeta": operaciones_mensuales, 
         "gasto_promedio_op": gasto_promedio_op,
         "estabilidad_laboral": estabilidad_laboral
